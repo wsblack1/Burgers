@@ -47,7 +47,7 @@ module globaldata
   function g(xn,tn)
   real(wp), intent(in) :: xn,tn
   real(wp) g
-!  g = -0.1_wp*xn
+!  g = -1.0_wp*xn
   g = 1.0_wp-tanh((xn-tn+5.0_wp)/(2.0_wp*eps))
 !  write(*,*) v, (xn-tn+5.0_wp)/(2.0_wp*v)
 !  write(*,*) xn, tn, g
@@ -1291,8 +1291,9 @@ module fluxfunctions
   subroutine initrbarint4()
 
     nbstencil = 4
+    nnzint = 5
 
-    allocate(rbar(nbstencil+1,nbstencil+1))
+    allocate(rbar(nnzint,nbstencil+1))
     allocate(jVsts(nbstencil+1))
     allocate(jVste(nbstencil+1))
 
@@ -1332,9 +1333,10 @@ module fluxfunctions
 
   subroutine initrbarint6()
 
-    nbstencil = 6
+    nbstencil = 7
+    nnzint = 7
 
-    allocate(rbar(nbstencil+1,nbstencil+1))
+    allocate(rbar(nnzint,nbstencil+1))
     allocate(jVsts(nbstencil+1))
     allocate(jVste(nbstencil+1))
 
@@ -1384,6 +1386,12 @@ module fluxfunctions
     rbar(5,7) = 1.3833236882716049382716049382716049383_wp
     rbar(6,7) = -0.13888888888888888888888888888888888889_wp
     rbar(7,7) = 0.011111111111111111111111111111111111111_wp
+    rbar(1,8) = -0.011111111111111111111111111111111111111_wp
+    rbar(2,8) = 0.13888888888888888888888888888888888889_wp
+    rbar(3,8) = -1.3611111111111111111111111111111111111_wp
+    rbar(4,8) = 1.3611111111111111111111111111111111111_wp
+    rbar(5,8) = -0.13888888888888888888888888888888888889_wp
+    rbar(6,8) = 0.011111111111111111111111111111111111111_wp
     jVsts(1) = 1
     jVste(1) = 6
     jVsts(2) = 0
@@ -1398,14 +1406,17 @@ module fluxfunctions
     jVste(6) = 3
     jVsts(7) = -3
     jVste(7) = 3
+    jVsts(8) = -2
+    jVste(8) = 3
 
   end subroutine initrbarint6
 
   subroutine initrbarint8()
 
-    nbstencil = 8
+    nbstencil = 9
+    nnzint = 9
 
-    allocate(rbar(nbstencil+1,nbstencil+1))
+    allocate(rbar(nnzint,nbstencil+1))
     allocate(jVsts(nbstencil+1))
     allocate(jVste(nbstencil+1))
 
@@ -1483,6 +1494,14 @@ module fluxfunctions
     rbar(7,9) = -0.17638888888888888888888888888888888889_wp
     rbar(8,9) = 0.023611111111111111111111111111111111111_wp
     rbar(9,9) = -0.0017857142857142857142857142857142857143_wp
+    rbar(1,10) = 0.0017857142857142857142857142857142857143_wp
+    rbar(2,10) = -0.023611111111111111111111111111111111111_wp
+    rbar(3,10) = 0.17638888888888888888888888888888888889_wp
+    rbar(4,10) = -1.4236111111111111111111111111111111111_wp
+    rbar(5,10) = 1.4236111111111111111111111111111111111_wp
+    rbar(6,10) = -0.17638888888888888888888888888888888889_wp
+    rbar(7,10) = 0.023611111111111111111111111111111111111_wp
+    rbar(8,10) = -0.0017857142857142857142857142857142857143_wp
     jVsts(1) = 1
     jVste(1) = 7
     jVsts(2) = 0
@@ -1501,9 +1520,10 @@ module fluxfunctions
     jVste(8) = 4
     jVsts(9) = -4
     jVste(9) = 4
+    jVsts(10) = -3
+    jVste(10) = 4
 
   end subroutine initrbarint8
-
 
   function fluxViscous(uin,nswin,ibdloc)
     ! Arguments
@@ -1710,8 +1730,8 @@ module subroutines
 
     q(1) = q(1) - bcli
     q(jmax) = q(jmax) - bcri
-! do i=0,jmax
-! write(*,*) i,fp(i)
+! do i=1,jmax
+! write(*,*) i,q(i)
 ! end do
 ! stop
   deallocate(fp)
@@ -1964,11 +1984,11 @@ program burgers_test
 
 ! Setup time & cfl parameters
   time = 0.0_wp
-  end_time = 10.0_wp
-!  end_time = 1.5_wp
+!  end_time = 10.0_wp
+  end_time = 1.5_wp
 !  end_time = 20.0_wp
-!  end_time = 0.05_wp
-  cfl = 0.1_wp
+!  end_time = 0.5_wp
+  cfl = 0.05_wp
   if (choice <=2) then
     delta_t = cfl*delta_x
   else if (choice > 2) then
@@ -1987,6 +2007,7 @@ program burgers_test
     call initrkint54
   end if
   call initpinvdx
+
 ! Initialize inviscid flux point coefficients
   if (order == 2) then
     call initfint
